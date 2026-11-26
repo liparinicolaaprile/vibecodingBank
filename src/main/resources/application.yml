@@ -1,0 +1,100 @@
+# ==========================================================
+#  LipariBank Core Backend - configurazione comune
+# ==========================================================
+spring:
+  application:
+    name: liparibank-core-backend
+  profiles:
+    default: dev
+  jpa:
+    open-in-view: false
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  port: 8080
+  error:
+    include-stacktrace: never
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+liparibank:
+  bank-code: LIPBIT00
+  max-transfer-amount: "10000.00"
+  audit:
+    enabled: true
+
+---
+# ==========================================================
+#  Profilo DEV - H2 in memoria, log verbosi, credenziali locali
+# ==========================================================
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:h2:mem:liparibank;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+  security:
+    user:
+      name: ${LIPARIBANK_USER:dev}
+      password: ${LIPARIBANK_PASSWORD:dev-password}
+      roles: ADMIN
+
+liparibank:
+  bank-code: LIPBIT00-DEV
+  max-transfer-amount: "50000.00"
+  audit:
+    enabled: true
+
+logging:
+  level:
+    com.lipari.bank: DEBUG
+
+---
+# ==========================================================
+#  Profilo PROD - PostgreSQL, tutto da variabili d'ambiente
+#  (nessun default per i segreti: l'avvio fallisce se mancano)
+# ==========================================================
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  security:
+    user:
+      name: ${LIPARIBANK_USER}
+      password: ${LIPARIBANK_PASSWORD}
+      roles: ADMIN
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+liparibank:
+  bank-code: ${LIPARIBANK_BANK_CODE:LIPBIT00}
+  max-transfer-amount: "${LIPARIBANK_MAX_TRANSFER:10000.00}"
+  audit:
+    enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.lipari.bank: INFO
